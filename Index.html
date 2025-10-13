@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Signs Browser</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="controls">
+      <label>
+        Layer
+        <select id="filter-layer">
+          <option value="">All</option>
+        </select>
+      </label>
+      <label>
+        Dimension
+        <select id="filter-dim">
+          <option value="">All</option>
+        </select>
+      </label>
+      <label>
+        Color
+        <select id="filter-color">
+          <option value="">All</option>
+        </select>
+      </label>
+      <label class="search">
+        Search
+        <input id="filter-search" placeholder="name / filename / host…" />
+      </label>
+    </div>
+    <div id="count"></div>
+  </header>
+
+  <div id="gate" class="gate" aria-modal="true" role="dialog">
+  <div class="gate-card">
+    <h1>Enter Password</h1>
+    <input id="gate-input" type="password" placeholder="Password" autocomplete="current-password" />
+    <button id="gate-btn" type="button">Unlock</button>
+    </label>
+    <div id="gate-error" class="gate-error" aria-live="polite"></div>
+  </div>
+</div>
+
+  <main id="grid" class="grid" aria-live="polite"></main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Copied link</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
