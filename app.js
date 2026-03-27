@@ -1,142 +1,238 @@
-let signData = {};
-let currentLayer = "All";
-let currentDim = "All"; // New state
-let currentColor = "All"; // New state
-let searchQuery = "";
-
-const grid = document.getElementById("grid");
-const layerList = document.getElementById("layer-list");
-const toast = document.getElementById("toast");
-const searchInput = document.getElementById("search");
-// New selectors
-const dimSelect = document.getElementById("filter-dim");
-const colorSelect = document.getElementById("filter-color");
-
-async function init() {
-  try {
-    const response = await fetch('signs.json');
-    signData = await response.json();
-    
-    // Setup Search
-    searchInput.addEventListener('input', (e) => {
-      searchQuery = e.target.value.toLowerCase();
-      renderGrid();
-    });
-
-    // Populate and setup Dropdowns
-    setupDropdowns();
-    dimSelect.addEventListener('change', (e) => {
-      currentDim = e.target.value;
-      renderGrid();
-    });
-    colorSelect.addEventListener('change', (e) => {
-      currentColor = e.target.value;
-      renderGrid();
-    });
-
-    renderLayers();
-    renderGrid();
-  } catch (err) {
-    console.error("Failed to load signs.json", err);
-  }
+:root {
+  --bg-deep: #000;
+  --bg-panel: #000;
+  --bg-card: #000;
+  --accent: #ffffff;
+  --text-main: #ffff;
+  --text-dim: #a5acaf;
+  --border: #ffffff;
 }
 
-// Helper to fill dropdowns with unique keys from signs.json
-function setupDropdowns() {
-  const dims = new Set();
-  const colors = new Set();
-  
-  for (const layer in signData) {
-    for (const dim in signData[layer]) {
-      dims.add(dim);
-      for (const color in signData[layer][dim]) {
-        colors.add(color);
-      }
-    }
-  }
-
-  dims.forEach(d => dimSelect.innerHTML += `<option value="${d}">${d}</option>`);
-  colors.forEach(c => colorSelect.innerHTML += `<option value="${c}">${c}</option>`);
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-main);
+  overflow: hidden;
 }
 
-function showToast() {
-  toast.classList.add("visible");
-  setTimeout(() => toast.classList.remove("visible"), 1500);
+.app-container {
+  display: flex;
+  height: 100vh;
 }
 
-function copy(text) {
-  navigator.clipboard.writeText(text);
-  showToast();
+/* Sidebar - Industrial Style */
+.sidebar {
+  width: 260px;
+  background: var(--bg-panel);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
 }
 
-function renderLayers() {
-  const layers = ["All", ...Object.keys(signData)];
-  layerList.innerHTML = "";
-
-  layers.forEach(layer => {
-    const btn = document.createElement("button");
-    btn.className = `filter-btn ${currentLayer === layer ? 'active' : ''}`;
-    btn.innerHTML = `<span class="btn-label">${layer.toUpperCase()}</span>`;
-    
-    btn.onclick = () => {
-      currentLayer = layer;
-      renderLayers();
-      renderGrid();
-    };
-    layerList.appendChild(btn);
-  });
+.brand {
+  padding: 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-function renderGrid() {
-  grid.innerHTML = "";
-  let allItems = [];
-  
-  for (const layer in signData) {
-    if (currentLayer !== "All" && currentLayer !== layer) continue;
-    
-    for (const dimension in signData[layer]) {
-      // Dimension Filter
-      if (currentDim !== "All" && dimension !== currentDim) continue;
-      
-      for (const color in signData[layer][dimension]) {
-        // Color Filter
-        if (currentColor !== "All" && color !== currentColor) continue;
-        
-        signData[layer][dimension][color].forEach(item => {
-          const matchesSearch = item.name.toLowerCase().includes(searchQuery) || 
-                               item.color.toLowerCase().includes(searchQuery);
-          if (matchesSearch) {
-            allItems.push(item);
-          }
-        });
-      }
-    }
-  }
-
-  if (allItems.length === 0) {
-    grid.innerHTML = `<div class="no-results">NO SIGNS FOUND</div>`;
-    return;
-  }
-
-  allItems.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "sign-card";
-    card.innerHTML = `
-      <div class="card-preview">
-        <img src="${item.url}" alt="${item.name}" loading="lazy">
-      </div>
-      <div class="card-info">
-        <span class="card-name">${item.name}</span>
-        <div class="card-footer">
-          <span class="card-meta">${item.dimension}</span>
-          <span class="card-tag">${item.color}</span>
-        </div>
-      </div>
-    `;
-
-    card.onclick = () => copy(item.url);
-    grid.appendChild(card);
-  });
+.brand-text .title {
+  display: block;
+  font-weight: 800;
+  letter-spacing: 1px;
 }
 
-init();
+.brand-text .subtitle {
+  font-size: 16px;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
+.brand-logo {
+  width: 36px;  /* Adjust size as needed */
+  height: 36px; /* Keep it square or let it be auto */
+  object-fit: fill;
+  /* Optional: adds a subtle glow if your logo is a bright color */
+  filter: drop-shadow(0 0 5px var(--accent)); 
+}
+
+.nav-section {
+  padding: 20px;
+}
+
+.nav-section h3 {
+  font-size: 12px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+}
+
+.filter-btn {
+  width: 100%;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-dim);
+  padding: 10px 12px;
+  text-align: left;
+  cursor: pointer;
+  margin-bottom: 4px;
+  font-size: 12px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+.filter-btn:hover {
+  background: var(--bg-card);
+  color: var(--text-main);
+}
+
+.filter-btn.active {
+  border-left: 3px solid var(--accent);
+  background: rgba(0, 242, 255, 0.05);
+  color: var(--accent);
+}
+
+/* Content Area */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 50%, #1c1f24 0%, #0a0b0c 100%);
+}
+
+.top-bar {
+  padding: 15px 30px;
+  border-bottom: 1px solid var(--border);
+  background: rgba(20, 22, 25, 0.8);
+  backdrop-filter: blur(10px);
+}
+
+.search-wrapper input {
+  background: var(--bg-deep);
+  border: 1px solid var(--border);
+  color: white;
+  padding: 8px 15px;
+  width: 300px;
+  border-radius: 4px;
+}
+
+/* Grid & Cards */
+
+.sign-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 30px;
+  display: grid;
+  /* Reduced min-width to better fit smaller screens */
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+  gap: 20px;
+  align-content: start;
+}
+
+.sign-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: visible;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.sign-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.card-preview {
+  min-height: 120px; /* Force a height so it doesn't collapse */
+  background: #a5acaf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid var(--border);
+  position: static;
+}
+
+.card-preview img {
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: contain; 
+  filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+.card-info {
+  padding: 12px;
+}
+
+.card-name {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-meta {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
+.card-tag {
+  font-size: 10px;
+  color: var(--text-dim);
+  font-family: monospace;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background: var(--accent);
+  color: black;
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 10px;
+  letter-spacing: 1px;
+  transform: translateY(100px);
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.toast.visible {
+  transform: translateY(0);
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filter-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.filter-controls select {
+  background: var(--bg-deep);
+  color: var(--text-main);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  font-family: monospace;
+  font-size: 10px;
+  outline: none;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.filter-controls select:focus {
+  border-color: var(--accent);
+}
